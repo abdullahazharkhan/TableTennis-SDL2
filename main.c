@@ -4,94 +4,53 @@
 #include <stdbool.h>
 #include <math.h>
 #include <time.h>
-
-#define WIDTH 1024
-#define HEIGHT 600
-#define BALLSIZE 10
-#define PLAYERWIDTH 10
-#define PLAYERHEIGHT 75
-#define PLAYERMARGIN 10
-const float PLAYER_MOVE_SPEED = 150.0f;
-float SPEED = 140;
+#include "definitions.h"
+#include "structs.h"
 
 bool served = false;
-
-typedef struct Ball
-{
-    float x;
-    float y;
-    float xSpeed;
-    float ySpeed;
-    int size;
-
-} Ball;
-
-typedef struct Player
-{
-    int score;
-    float yPosition;
-} Player;
-
-typedef struct CenterLine
-{
-    float x;
-    float y;
-    int size;
-} CenterLine;
-
 Ball ball;
-
 Player player1;
 Player player2;
-
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 
-// for bg image
-SDL_Surface *screen;
-SDL_Surface *image;
+// Score Bar
+SDL_Rect score = {
+    .x = WIDTH / 2 - 60,
+    .y = HEIGHT - 40,
+    .w = 120,
+    .h = 20,
+};
 
-bool Initialize(void);
+// for color
+bool player1Score = false;
+bool player2Score = false;
+
+bool Start(void);
 void Update(float);
-void Shutdown(void);
-
-Ball MakeBall(int size);
+void End(void);
+Ball CreateBall(int size);
 void UpdateBall(Ball *ball, float elapsed);
 void RenderBall(const Ball *);
-
 Player MakePlayer(void);
 void UpdatePlayers(float elapsed);
 void RenderPlayers(void);
-
 void UpdateScore(int player, int points);
-
 void RenderLines(float yPos);
 
 int main(int argc, char *argv[])
 {
     srand((unsigned int)time(NULL));
 
-    atexit(Shutdown);
+    atexit(End);
 
-    if (!Initialize())
+    if (!Start())
     {
         exit(1);
     }
 
-    /* Create Event loop*/
-    // SDL_Event event;
-    // while (SDL_WaitEvent(&event))
-    // {
-    //     if (event.type == SDL_QUIT)
-    //     {
-    //         break;
-    //     }
-    // }
-
     bool quit = false;
     SDL_Event event;
-
-    // pollEvent is better than waitEvent
 
     Uint32 lastTick = SDL_GetTicks();
 
@@ -115,9 +74,9 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-bool Initialize(void)
+bool Start(void)
 {
-    /* Initializes the timer, audio, video, joystick,
+    /* Starts the timer, audio, video, joystick,
     haptic, gamecontroller and events subsystems */
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
@@ -128,14 +87,7 @@ bool Initialize(void)
     /* Create a window */
     window = SDL_CreateWindow("Table Tennis", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
     // window created but it does not stay
-    // to fix window, EVENT LOOP plays a role
-
-    // // for bg image
-    // screen = SDL_GetWindowSurface(window);
-    // image = SDL_LoadBMP("bg.bmp");
-    // SDL_BlitSurface(image, NULL, screen, NULL);
-    // SDL_FreeSurface(image);
-    // SDL_UpdateWindowSurface(window);
+    // to fix the window, EVENT LOOP comes into play
 
     if (!window)
     {
@@ -147,7 +99,7 @@ bool Initialize(void)
     {
         return false;
     }
-    ball = MakeBall(BALLSIZE);
+    ball = CreateBall(BALLSIZE);
     player1 = MakePlayer();
     player2 = MakePlayer();
     return true;
@@ -171,9 +123,24 @@ void Update(float elapsed)
 
     SDL_RenderDrawLine(renderer, 0, HEIGHT - 60, WIDTH, HEIGHT - 60);
 
+    // score bar rendering
+    if (player1Score)
+    {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    }
+    else if (player2Score)
+    {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    }
+    else
+    {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    }
+    SDL_RenderFillRect(renderer, &score);
+
     SDL_RenderPresent(renderer);
 }
-void Shutdown(void)
+void End(void)
 {
     if (renderer)
     {
@@ -186,19 +153,19 @@ void Shutdown(void)
     SDL_Quit();
 }
 
-bool CoinFlip(void)
+bool HeadOrTails(void)
 {
     return rand() % 2 == 1 ? true : false;
 }
 
-Ball MakeBall(int size)
+Ball CreateBall(int size)
 {
     Ball ball = {
         .x = WIDTH / 2 - size / 2,
         .y = HEIGHT / 2 - size / 2,
         .size = size,
-        .xSpeed = SPEED * (CoinFlip() ? 1 : -1),
-        .ySpeed = SPEED * (CoinFlip() ? 1 : -1),
+        .xSpeed = SPEED * (HeadOrTails() ? 1 : -1),
+        .ySpeed = SPEED * (HeadOrTails() ? 1 : -1),
     };
     return ball;
 }
@@ -234,12 +201,12 @@ void UpdateBall(Ball *ball, float elapsed)
     if (ball->x < BALLSIZE / 2)
     {
         // ball->xSpeed = abs(ball->xSpeed);
-        UpdateScore(2, 100);
+        UpdateScore(2, 1);
     }
     if (ball->x > WIDTH - BALLSIZE / 2)
     {
         // ball->xSpeed = -abs(ball->xSpeed);
-        UpdateScore(1, 100);
+        UpdateScore(1, 1);
     }
     if (ball->y < BALLSIZE / 2)
     {
@@ -267,12 +234,12 @@ void UpdatePlayers(float elapsed)
         served = true;
     }
 
-    if (keyboardState[SDL_SCANCODE_W])
+    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2) && rand() % 2 == 0)
     {
         if (player1.yPosition > PLAYERHEIGHT / 2 + 10)
             player1.yPosition -= PLAYER_MOVE_SPEED * elapsed;
     }
-    if (keyboardState[SDL_SCANCODE_S])
+    else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2) && rand() % 2 == 0)
     {
         if (player1.yPosition < HEIGHT - PLAYERHEIGHT / 2 - 70)
             player1.yPosition += PLAYER_MOVE_SPEED * elapsed;
@@ -345,15 +312,23 @@ void RenderPlayers(void)
 
 void UpdateScore(int player, int points)
 {
-    // to restart the game
+    // to reStart the game
     served = false;
     if (player == 1)
     {
+        player1Score = true;
+        player2Score = false;
         player1.score += points;
+        if (score.x > 30)
+            score.x -= 100;
     }
     if (player == 2)
     {
+        player2Score = true;
+        player1Score = false;
         player2.score += points;
+        if (score.x < WIDTH - 30)
+            score.x += 100;
     }
     char *fmt = "Player 1: %d || Player 2: %d";
     int len = snprintf(NULL, 0, fmt, player1.score, player2.score);
@@ -366,9 +341,9 @@ void UpdateScore(int player, int points)
 void RenderLines(float yPos)
 {
     SDL_Rect lineRect = {
-        .x = WIDTH / 2,
+        .x = WIDTH / 2 - 1,
         .y = yPos,
-        .w = 3,
+        .w = 2,
         .h = 20,
     };
 
