@@ -234,12 +234,12 @@ void UpdatePlayers(float elapsed)
         served = true;
     }
 
-    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2) && rand() % 2 == 0)
+    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2) && rand() % 10 == 0)
     {
         if (player1.yPosition > PLAYERHEIGHT / 2 + 10)
             player1.yPosition -= PLAYER_MOVE_SPEED * elapsed;
     }
-    else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2) && rand() % 2 == 0)
+    else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2) && rand() % 10 == 0)
     {
         if (player1.yPosition < HEIGHT - PLAYERHEIGHT / 2 - 70)
             player1.yPosition += PLAYER_MOVE_SPEED * elapsed;
@@ -320,15 +320,15 @@ void UpdateScore(int player, int points)
         player2Score = false;
         player1.score += points;
         if (score.x > 30)
-            score.x -= 100;
+            score.x -= 50;
     }
     if (player == 2)
     {
         player2Score = true;
         player1Score = false;
         player2.score += points;
-        if (score.x < WIDTH - 30)
-            score.x += 100;
+        if (score.x + 120 < WIDTH)
+            score.x += 50;
     }
     char *fmt = "Player 1: %d || Player 2: %d";
     int len = snprintf(NULL, 0, fmt, player1.score, player2.score);
