@@ -165,19 +165,19 @@ void End(void)
     }
     if (player1.score > player2.score)
     {
-        fprintf(file, "You Lost --- 😢👎");
+        fprintf(file, "You Lost 😶 --- 😢👎");
     }
     else if (player1.score < player2.score)
     {
-        fprintf(file, "You Won --- 🥳🎉");
+        fprintf(file, "You Won 🏆 --- 🥳🎉");
     }
     else
     {
-        fprintf(file, "Match Tied --- 😕😕");
+        fprintf(file, "Match Tied --- 😕👔");
     }
-    fprintf(file, "\n\n-----Final Score-----\n");
-    fprintf(file, "--> Bot: %d\n", player1.score);
-    fprintf(file, "--> You: %d\n", player2.score);
+    fprintf(file, "\n\n----- Final Score 💯 -----\n");
+    fprintf(file, "--> Bot 🤖: %d\n", player1.score);
+    fprintf(file, "--> You 👦: %d\n", player2.score);
     SDL_Quit();
 }
 

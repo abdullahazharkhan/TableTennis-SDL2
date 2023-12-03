@@ -1,7 +1,7 @@
----> You scored a point -- 😎
+---> Bot scored a point --- 😑😒
 -------------------------------------
-You Won --- 🥳🎉
+You Lost 😶 --- 😢👎
 
------Final Score-----
---> Bot: 0
---> You: 100
+----- Final Score 💯 -----
+--> Bot 🤖: 100
+--> You 👦: 0
