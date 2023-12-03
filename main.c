@@ -13,7 +13,7 @@ Player player1;
 Player player2;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
-
+FILE *file;
 // Score Bar
 SDL_Rect score = {
     .x = WIDTH / 2 - 60,
@@ -93,17 +93,28 @@ bool Start(void)
     {
         return false;
     }
+
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if (!window)
     {
         return false;
     }
+
+    file = fopen("ScoreBoard.txt", "w");
+    if (file == NULL)
+    {
+        printf("Error initializing file\n");
+        return false;
+    }
+
     ball = CreateBall(BALLSIZE);
     player1 = MakePlayer();
     player2 = MakePlayer();
+
     return true;
 }
+
 void Update(float elapsed)
 {
     // to color the screen
@@ -140,6 +151,7 @@ void Update(float elapsed)
 
     SDL_RenderPresent(renderer);
 }
+
 void End(void)
 {
     if (renderer)
@@ -150,6 +162,21 @@ void End(void)
     {
         SDL_DestroyWindow(window);
     }
+    if (player1.score > player2.score)
+    {
+        fprintf(file, "You Lost --- 😢👎");
+    }
+    else if (player1.score < player2.score)
+    {
+        fprintf(file, "You Won --- 🥳🎉");
+    }
+    else
+    {
+        fprintf(file, "Match Tied --- 😕😕");
+    }
+    fprintf(file, "\n\n-----Final Score-----\n");
+    fprintf(file, "-> Bot: %d\n", player1.score);
+    fprintf(file, "-> You: %d\n", player2.score);
     SDL_Quit();
 }
 
@@ -174,7 +201,7 @@ void RenderBall(const Ball *ball)
 {
     int size = ball->size;
     int halfSize = size / 2;
-    SDL_Rect rect = {
+    SDL_Rect ballRect = {
         .x = ball->x - halfSize,
         .y = ball->y - halfSize,
         .w = size,
@@ -182,7 +209,7 @@ void RenderBall(const Ball *ball)
     };
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
+    SDL_RenderFillRect(renderer, &ballRect);
 }
 
 void UpdateBall(Ball *ball, float elapsed)
@@ -201,12 +228,12 @@ void UpdateBall(Ball *ball, float elapsed)
     if (ball->x < BALLSIZE / 2)
     {
         // ball->xSpeed = abs(ball->xSpeed);
-        UpdateScore(2, 1);
+        UpdateScore(2, 100);
     }
     if (ball->x > WIDTH - BALLSIZE / 2)
     {
         // ball->xSpeed = -abs(ball->xSpeed);
-        UpdateScore(1, 1);
+        UpdateScore(1, 100);
     }
     if (ball->y < BALLSIZE / 2)
     {
@@ -225,6 +252,7 @@ Player MakePlayer(void)
     };
     return player;
 }
+
 void UpdatePlayers(float elapsed)
 {
     const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
@@ -234,12 +262,13 @@ void UpdatePlayers(float elapsed)
         served = true;
     }
 
-    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2) && rand() % 10 == 0)
+    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2))
     {
         if (player1.yPosition > PLAYERHEIGHT / 2 + 10)
             player1.yPosition -= PLAYER_MOVE_SPEED * elapsed;
     }
-    else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2) && rand() % 10 == 0)
+    // dekhna
+    else if ((player1.yPosition - PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2) && rand() % 2 == 0)
     {
         if (player1.yPosition < HEIGHT - PLAYERHEIGHT / 2 - 70)
             player1.yPosition += PLAYER_MOVE_SPEED * elapsed;
@@ -319,6 +348,8 @@ void UpdateScore(int player, int points)
         player1Score = true;
         player2Score = false;
         player1.score += points;
+        fprintf(file, "---> Bot scored a point -- 😑\n");
+        fprintf(file, "-------------------------------------\n");
         if (score.x > 30)
             score.x -= 50;
     }
@@ -327,6 +358,8 @@ void UpdateScore(int player, int points)
         player2Score = true;
         player1Score = false;
         player2.score += points;
+        fprintf(file, "---> You scored a point -- 😎\n");
+        fprintf(file, "-------------------------------------\n");
         if (score.x + 120 < WIDTH)
             score.x += 50;
     }
@@ -341,7 +374,7 @@ void UpdateScore(int player, int points)
 void RenderLines(float yPos)
 {
     SDL_Rect lineRect = {
-        .x = WIDTH / 2 - 1,
+        .x = (WIDTH / 2) - 1,
         .y = yPos,
         .w = 2,
         .h = 20,
