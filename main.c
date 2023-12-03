@@ -7,13 +7,14 @@
 #include "definitions.h"
 #include "structs.h"
 
-bool served = false;
+bool started = false;
 Ball ball;
 Player player1;
 Player player2;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 FILE *file;
+
 // Score Bar
 SDL_Rect score = {
     .x = WIDTH / 2 - 60,
@@ -26,7 +27,7 @@ SDL_Rect score = {
 bool player1Score = false;
 bool player2Score = false;
 
-bool Start(void);
+bool Initialize(void);
 void Update(float);
 void End(void);
 Ball CreateBall(int size);
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
 
     atexit(End);
 
-    if (!Start())
+    if (!Initialize())
     {
         exit(1);
     }
@@ -74,9 +75,9 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-bool Start(void)
+bool Initialize(void)
 {
-    /* Starts the timer, audio, video, joystick,
+    /* Initializes the timer, audio, video, joystick,
     haptic, gamecontroller and events subsystems */
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
@@ -85,7 +86,7 @@ bool Start(void)
     }
 
     /* Create a window */
-    window = SDL_CreateWindow("Table Tennis", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Table Tennis -- Rally", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
     // window created but it does not stay
     // to fix the window, EVENT LOOP comes into play
 
@@ -175,8 +176,8 @@ void End(void)
         fprintf(file, "Match Tied --- 😕😕");
     }
     fprintf(file, "\n\n-----Final Score-----\n");
-    fprintf(file, "-> Bot: %d\n", player1.score);
-    fprintf(file, "-> You: %d\n", player2.score);
+    fprintf(file, "--> Bot: %d\n", player1.score);
+    fprintf(file, "--> You: %d\n", player2.score);
     SDL_Quit();
 }
 
@@ -214,7 +215,7 @@ void RenderBall(const Ball *ball)
 
 void UpdateBall(Ball *ball, float elapsed)
 {
-    if (!served)
+    if (!started)
     {
         ball->x = WIDTH / 2;
         ball->y = HEIGHT / 2;
@@ -224,7 +225,7 @@ void UpdateBall(Ball *ball, float elapsed)
     ball->x += ball->xSpeed * elapsed;
     ball->y += ball->ySpeed * elapsed;
 
-    // takay ball window se bahir na jaa ske
+    // to restrict the ball inside the windnow
     if (ball->x < BALLSIZE / 2)
     {
         // ball->xSpeed = abs(ball->xSpeed);
@@ -259,16 +260,16 @@ void UpdatePlayers(float elapsed)
 
     if (keyboardState[SDL_SCANCODE_SPACE])
     {
-        served = true;
+        started = true;
     }
 
-    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2))
+    // probability
+    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2) && HeadOrTails())
     {
         if (player1.yPosition > PLAYERHEIGHT / 2 + 10)
             player1.yPosition -= PLAYER_MOVE_SPEED * elapsed;
     }
-    // dekhna
-    else if ((player1.yPosition - PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2) && rand() % 2 == 0)
+    else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2))
     {
         if (player1.yPosition < HEIGHT - PLAYERHEIGHT / 2 - 70)
             player1.yPosition += PLAYER_MOVE_SPEED * elapsed;
@@ -313,7 +314,7 @@ void UpdatePlayers(float elapsed)
 
     if (SDL_HasIntersection(&ballRect, &player2rect))
     {
-        ball.xSpeed = -abs(ball.xSpeed); // make ball go right
+        ball.xSpeed = -abs(ball.xSpeed); // make ball go left
     }
 }
 void RenderPlayers(void)
@@ -341,14 +342,14 @@ void RenderPlayers(void)
 
 void UpdateScore(int player, int points)
 {
-    // to reStart the game
-    served = false;
+    // to reInitialize the game
+    started = false;
     if (player == 1)
     {
         player1Score = true;
         player2Score = false;
         player1.score += points;
-        fprintf(file, "---> Bot scored a point -- 😑\n");
+        fprintf(file, "---> Bot scored a point --- 😑😒\n");
         fprintf(file, "-------------------------------------\n");
         if (score.x > 30)
             score.x -= 50;
@@ -358,15 +359,15 @@ void UpdateScore(int player, int points)
         player2Score = true;
         player1Score = false;
         player2.score += points;
-        fprintf(file, "---> You scored a point -- 😎\n");
+        fprintf(file, "---> You scored a point --- 😎😏\n");
         fprintf(file, "-------------------------------------\n");
         if (score.x + 120 < WIDTH)
             score.x += 50;
     }
-    char *fmt = "Player 1: %d || Player 2: %d";
-    int len = snprintf(NULL, 0, fmt, player1.score, player2.score);
+    char *formatString = "Player 1: %d || Player 2: %d";
+    int len = snprintf(NULL, 0, formatString, player1.score, player2.score);
     char buf[len + 1];
-    snprintf(buf, len + 1, fmt, player1.score, player2.score);
+    snprintf(buf, len + 1, formatString, player1.score, player2.score);
 
     SDL_SetWindowTitle(window, buf);
 }
