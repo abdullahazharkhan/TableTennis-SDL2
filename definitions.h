@@ -5,4 +5,4 @@
 #define PLAYERHEIGHT 65
 #define PLAYERMARGIN 10
 const float PLAYER_MOVE_SPEED = 400.5f;
-float SPEED = 250.5f;
+float SPEED = 230.5f;

@@ -202,7 +202,7 @@ Ball CreateBall(int size)
         .x = WIDTH / 2 - size / 2,
         .y = HEIGHT / 2 - size / 2,
         .size = size,
-        .xSpeed = SPEED * (HeadOrTails() ? 1 : -1),
+        .xSpeed = SPEED * (HeadOrTails() ? 1 : 1),
         .ySpeed = SPEED * (HeadOrTails() ? 1 : -1),
     };
     return ball;
@@ -352,8 +352,8 @@ void UpdateScore(int player, int points)
 {
     // to reinitialize the game
     started = false;
-    ball.xSpeed += 40;
-    ball.ySpeed += 40;
+    ball.xSpeed += 10;
+    ball.ySpeed += 10;
     if (player == 1)
     {
         player1Score = true;
