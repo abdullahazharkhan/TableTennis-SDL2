@@ -344,8 +344,6 @@ void UpdateScore(int player, int points)
 {
     // to reInitialize the game
     started = false;
-    ball.xSpeed += 50;
-    ball.ySpeed += 50;
     if (player == 1)
     {
         player1Score = true;
