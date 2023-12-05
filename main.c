@@ -7,7 +7,8 @@
 #include "definitions.h"
 #include "structs.h"
 
-bool started = false;
+// essentials
+bool started = false; // is game started or not
 Ball ball;
 Player player1;
 Player player2;
@@ -23,10 +24,11 @@ SDL_Rect score = {
     .h = 20,
 };
 
-// for color
+// to color the bottom score bar
 bool player1Score = false;
 bool player2Score = false;
 
+// ----functions' prototypes----
 bool Initialize(void);
 void Update(float);
 void End(void);
@@ -38,11 +40,13 @@ void UpdatePlayers(float elapsed);
 void RenderPlayers(void);
 void UpdateScore(int player, int points);
 void RenderLines(float yPos);
+// -----------------------------
 
 int main(int argc, char *argv[])
 {
     srand((unsigned int)time(NULL));
 
+    // at end of game
     atexit(End);
 
     if (!Initialize())
@@ -53,6 +57,7 @@ int main(int argc, char *argv[])
     bool quit = false;
     SDL_Event event;
 
+    // to get the number of milliseconds passed since the game started
     Uint32 lastTick = SDL_GetTicks();
 
     while (!quit)
@@ -64,6 +69,7 @@ int main(int argc, char *argv[])
                 quit = true;
             }
         }
+        // to animate rects
         Uint32 curTick = SDL_GetTicks();
         Uint32 diff = curTick - lastTick;
         float elapsed = diff / 1000.0f;
@@ -77,16 +83,16 @@ int main(int argc, char *argv[])
 
 bool Initialize(void)
 {
-    /* Initializes the timer, audio, video, joystick,
-    haptic, gamecontroller and events subsystems */
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    // Initializes the timer, audio, video, joystick,
+    // haptic, gamecontroller and events subsystems
+    if (SDL_Init(SDL_INIT_EVERYTHING))
     {
         printf("Error initializing SDL: %s\n", SDL_GetError());
         return false;
     }
 
-    /* Create a window */
-    window = SDL_CreateWindow("Table Tennis -- Rally", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+    // creates a window
+    window = SDL_CreateWindow("Table Tennis -- Rally", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
     // window created but it does not stay
     // to fix the window, EVENT LOOP comes into play
 
@@ -95,6 +101,7 @@ bool Initialize(void)
         return false;
     }
 
+    // creates a renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if (!window)
@@ -105,10 +112,11 @@ bool Initialize(void)
     file = fopen("ScoreBoard.txt", "w");
     if (file == NULL)
     {
-        printf("Error initializing file\n");
+        printf("Error initializing file ScoreBoard.txt\n");
         return false;
     }
 
+    // creates rects
     ball = CreateBall(BALLSIZE);
     player1 = MakePlayer();
     player2 = MakePlayer();
@@ -155,6 +163,7 @@ void Update(float elapsed)
 
 void End(void)
 {
+    // this func deallocates memory
     if (renderer)
     {
         SDL_DestroyRenderer(renderer);
@@ -183,6 +192,7 @@ void End(void)
 
 bool HeadOrTails(void)
 {
+    // to randomly guess
     return rand() % 2 == 1 ? true : false;
 }
 
@@ -228,12 +238,10 @@ void UpdateBall(Ball *ball, float elapsed)
     // to restrict the ball inside the windnow
     if (ball->x < BALLSIZE / 2)
     {
-        // ball->xSpeed = abs(ball->xSpeed);
         UpdateScore(2, 100);
     }
     if (ball->x > WIDTH - BALLSIZE / 2)
     {
-        // ball->xSpeed = -abs(ball->xSpeed);
         UpdateScore(1, 100);
     }
     if (ball->y < BALLSIZE / 2)
@@ -271,7 +279,7 @@ void UpdatePlayers(float elapsed)
     }
     else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2))
     {
-        if (player1.yPosition < HEIGHT - PLAYERHEIGHT / 2 - 70)
+        if (player1.yPosition < HEIGHT - PLAYERHEIGHT / 2 - 70 && HeadOrTails())
             player1.yPosition += PLAYER_MOVE_SPEED * elapsed;
     }
     if (keyboardState[SDL_SCANCODE_UP])
@@ -342,7 +350,7 @@ void RenderPlayers(void)
 
 void UpdateScore(int player, int points)
 {
-    // to reInitialize the game
+    // to reinitialize the game
     started = false;
     ball.xSpeed += 40;
     ball.ySpeed += 40;
