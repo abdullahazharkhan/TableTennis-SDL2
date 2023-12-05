@@ -264,9 +264,9 @@ void UpdatePlayers(float elapsed)
     }
 
     // probability
-    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2) && HeadOrTails())
+    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2))
     {
-        if (player1.yPosition > PLAYERHEIGHT / 2 + 10)
+        if ((player1.yPosition > PLAYERHEIGHT / 2 + 10) && HeadOrTails())
             player1.yPosition -= PLAYER_MOVE_SPEED * elapsed;
     }
     else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2))
