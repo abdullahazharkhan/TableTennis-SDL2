@@ -18,7 +18,7 @@ FILE *file;
 
 // Score Bar
 SDL_Rect score = {
-    .x = WIDTH / 2 - 60,
+    .x = (WIDTH / 2) - (120 / 2),
     .y = HEIGHT - 40,
     .w = 120,
     .h = 20,
@@ -85,7 +85,7 @@ bool Initialize(void)
 {
     // Initializes the timer, audio, video, joystick,
     // haptic, gamecontroller and events subsystems
-    if (SDL_Init(SDL_INIT_EVERYTHING))
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         printf("Error initializing SDL: %s\n", SDL_GetError());
         return false;
@@ -94,7 +94,6 @@ bool Initialize(void)
     // creates a window
     window = SDL_CreateWindow("Table Tennis -- Rally", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
     // window created but it does not stay
-    // to fix the window, EVENT LOOP comes into play
 
     if (!window)
     {
@@ -137,9 +136,7 @@ void Update(float elapsed)
     RenderPlayers();
 
     for (int i = 500; i >= 0; i -= 30)
-    {
         RenderLines(i);
-    }
 
     SDL_RenderDrawLine(renderer, 0, HEIGHT - 60, WIDTH, HEIGHT - 60);
 
@@ -187,6 +184,7 @@ void End(void)
     fprintf(file, "\n\n----- Final Score 💯 -----\n");
     fprintf(file, "--> Bot 🤖: %d\n", player1.score);
     fprintf(file, "--> You 👦: %d\n", player2.score);
+    fclose(file);
     SDL_Quit();
 }
 
@@ -202,7 +200,7 @@ Ball CreateBall(int size)
         .x = WIDTH / 2 - size / 2,
         .y = HEIGHT / 2 - size / 2,
         .size = size,
-        .xSpeed = SPEED * (HeadOrTails() ? 1 : 1),
+        .xSpeed = SPEED * (HeadOrTails() ? 1 : -1),
         .ySpeed = SPEED * (HeadOrTails() ? 1 : -1),
     };
     return ball;
@@ -235,7 +233,7 @@ void UpdateBall(Ball *ball, float elapsed)
     ball->x += ball->xSpeed * elapsed;
     ball->y += ball->ySpeed * elapsed;
 
-    // to restrict the ball inside the windnow
+    // to restrict the ball inside the window
     if (ball->x < BALLSIZE / 2)
     {
         UpdateScore(2, 100);
@@ -272,15 +270,15 @@ void UpdatePlayers(float elapsed)
     }
 
     // probability
-    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2))
+    if ((player1.yPosition + PLAYERHEIGHT / 2) > (ball.y + BALLSIZE / 2) && rand() % 2)
     {
-        if ((player1.yPosition > PLAYERHEIGHT / 2 + 10) && HeadOrTails())
-            player1.yPosition -= PLAYER_MOVE_SPEED * elapsed;
+        if ((player1.yPosition > PLAYERHEIGHT / 2 + 10))
+            player1.yPosition -= 8;
     }
-    else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2))
+    else if ((player1.yPosition + PLAYERHEIGHT / 2) < (ball.y + BALLSIZE / 2) && rand() % 2)
     {
-        if (player1.yPosition < HEIGHT - PLAYERHEIGHT / 2 - 70 && HeadOrTails())
-            player1.yPosition += PLAYER_MOVE_SPEED * elapsed;
+        if (player1.yPosition < HEIGHT - PLAYERHEIGHT / 2 - 70)
+            player1.yPosition += 8;
     }
     if (keyboardState[SDL_SCANCODE_UP])
     {
@@ -310,7 +308,7 @@ void UpdatePlayers(float elapsed)
 
     if (SDL_HasIntersection(&ballRect, &player1rect))
     {
-        ball.xSpeed = abs(ball.xSpeed); // make ball go right
+        ball.xSpeed = abs(ball.xSpeed); // makes ball go right
     }
 
     SDL_Rect player2rect = {
@@ -322,7 +320,7 @@ void UpdatePlayers(float elapsed)
 
     if (SDL_HasIntersection(&ballRect, &player2rect))
     {
-        ball.xSpeed = -abs(ball.xSpeed); // make ball go left
+        ball.xSpeed = -abs(ball.xSpeed); // makes ball go left
     }
 }
 void RenderPlayers(void)
