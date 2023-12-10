@@ -31,7 +31,25 @@ The current score is prominently displayed in the window title during gameplay, 
 Players can refer to the README file for instructions on building, running, and enjoying the Table Tennis game.
 
 ## Command to Compile
-gcc -Isrc/include -Lsrc/lib -o main main.c -lmingw32 -lSDL2main -lSDL2
+```html
+<div>
+  <button id="copyButton" onclick="copyToClipboard()">Copy Command</button>
+</div>
+<pre><code id="commandCode">gcc -Isrc/include -Lsrc/lib -o main main.c -lmingw32 -lSDL2main -lSDL2</code></pre>
+
+<script>
+function copyToClipboard() {
+  const commandText = document.getElementById('commandCode');
+  const tempInput = document.createElement('textarea');
+  tempInput.value = commandText.textContent;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  document.execCommand('copy');
+  document.body.removeChild(tempInput);
+  alert('Command copied to clipboard!');
+}
+</script>
+```
 
 ## Acknowledgements
 The game development acknowledges the use of the SDL2 library and other relevant resources or tools contributing to the creation of this engaging gaming experience.
