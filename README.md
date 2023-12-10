@@ -32,23 +32,7 @@ Players can refer to the README file for instructions on building, running, and 
 
 ## Command to Compile
 ```html
-<div>
-  <button id="copyButton" onclick="copyToClipboard()">Copy Command</button>
-</div>
-<pre><code id="commandCode">gcc -Isrc/include -Lsrc/lib -o main main.c -lmingw32 -lSDL2main -lSDL2</code></pre>
-
-<script>
-function copyToClipboard() {
-  const commandText = document.getElementById('commandCode');
-  const tempInput = document.createElement('textarea');
-  tempInput.value = commandText.textContent;
-  document.body.appendChild(tempInput);
-  tempInput.select();
-  document.execCommand('copy');
-  document.body.removeChild(tempInput);
-  alert('Command copied to clipboard!');
-}
-</script>
+gcc -Isrc/include -Lsrc/lib -o main main.c -lmingw32 -lSDL2main -lSDL2
 ```
 
 ## Acknowledgements
